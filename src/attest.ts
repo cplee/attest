@@ -30,6 +30,7 @@ export const createAttestation = async (
     sigstore: opts.sigstoreInstance,
     token: opts.githubToken,
     rekorURL: opts.rekorURL,
+    skipWrite: opts.rekorURL.length > 0,
   })
 
   const subDigest = subjectDigest(subject)
