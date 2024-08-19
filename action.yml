@@ -58,6 +58,10 @@ inputs:
       The GitHub token used to make authenticated API requests.
     default: ${{ github.token }}
     required: false
+  rekor-url:
+    description: >
+      The Rekor URL to use for privage instances.
+    required: false
 outputs:
   bundle-path:
     description: 'The path to the file containing the attestation bundle(s).'

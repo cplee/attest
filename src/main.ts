@@ -20,6 +20,7 @@ export type RunInputs = SubjectInputs &
     showSummary: boolean
     privateSigning: boolean
     batchSize: number
+    rekorURL: string
   }
 
 /* istanbul ignore next */
@@ -83,7 +84,8 @@ export async function run(inputs: RunInputs): Promise<void> {
         const att = await createAttestation(subject, predicate, {
           sigstoreInstance,
           pushToRegistry: inputs.pushToRegistry,
-          githubToken: inputs.githubToken
+          githubToken: inputs.githubToken,
+          rekorURL: inputs.rekorURL,
         })
         atts.push(att)
 

@@ -18,6 +18,7 @@ export const createAttestation = async (
     sigstoreInstance: SigstoreInstance
     pushToRegistry: boolean
     githubToken: string
+    rekorURL: string
   }
 ): Promise<AttestResult> => {
   // Sign provenance w/ Sigstore
@@ -27,7 +28,8 @@ export const createAttestation = async (
     predicateType: predicate.type,
     predicate: predicate.params,
     sigstore: opts.sigstoreInstance,
-    token: opts.githubToken
+    token: opts.githubToken,
+    rekorURL: opts.rekorURL,
   })
 
   const subDigest = subjectDigest(subject)
