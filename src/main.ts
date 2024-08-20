@@ -38,14 +38,7 @@ const logHandler = (level: string, ...args: unknown[]): void => {
 export async function run(inputs: RunInputs): Promise<void> {
   process.on('log', logHandler)
 
-  // Provenance visibility will be public ONLY if we can confirm that the
-  // repository is public AND the undocumented "private-signing" arg is NOT set.
-  // Otherwise, it will be private.
-  const sigstoreInstance: SigstoreInstance =
-    github.context.payload.repository?.visibility === 'public' &&
-    !inputs.privateSigning
-      ? PublicGoodSigstoreInstance
-      : GitHubSigstoreInstance
+  const sigstoreInstance: SigstoreInstance = getSigstoreInstance(inputs)
 
   try {
     const atts: AttestResult[] = []
@@ -85,7 +78,6 @@ export async function run(inputs: RunInputs): Promise<void> {
           sigstoreInstance,
           pushToRegistry: inputs.pushToRegistry,
           githubToken: inputs.githubToken,
-          rekorURL: inputs.rekorURL,
         })
         atts.push(att)
 
@@ -121,6 +113,30 @@ export async function run(inputs: RunInputs): Promise<void> {
   } finally {
     process.removeListener('log', logHandler)
   }
+}
+
+// Create a Sigstore instance for this input
+const getSigstoreInstance = (inputs: RunInputs): SigstoreInstance => {
+  // Provenance visibility will be public ONLY if we can confirm that the
+  // repository is public AND the undocumented "private-signing" arg is NOT set.
+  // Otherwise, it will be private.
+  let sigstoreInstance = 
+    github.context.payload.repository?.visibility === 'public' &&
+    !inputs.privateSigning
+      ? PublicGoodSigstoreInstance
+      : GitHubSigstoreInstance
+
+  // Use a private instance if rekorURL was provided
+  if (inputs.rekorURL) {
+    sigstoreInstance = {
+      ...sigstoreInstance,
+      rekorURL: inputs.rekorURL,
+      skipWrite: true,
+      name: 'Private',
+    }
+  }
+
+  return sigstoreInstance
 }
 
 // Log details about the attestation to the GitHub Actions run

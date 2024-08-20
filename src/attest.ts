@@ -25,7 +25,6 @@ export const GitHubSigstoreInstance: SigstoreInstance = {
   skipWrite: false,
 }
 
-
 export type AttestResult = Attestation & {
   subjectName: string
   subjectDigest: string
@@ -39,7 +38,6 @@ export const createAttestation = async (
     sigstoreInstance: SigstoreInstance
     pushToRegistry: boolean
     githubToken: string
-    rekorURL: string
   }
 ): Promise<AttestResult> => {
   // Sign provenance w/ Sigstore
