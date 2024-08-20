@@ -4,7 +4,28 @@ import { attachArtifactToImage, getRegistryCredentials } from '@sigstore/oci'
 const OCI_TIMEOUT = 30000
 const OCI_RETRY = 3
 
-export type SigstoreInstance = 'public-good' | 'github'
+export interface SigstoreInstance {
+  type: SigstoreInstanceType;
+  name: string;
+  skipWrite: boolean;
+  rekorURL?: string;
+}
+
+export type SigstoreInstanceType = 'public-good' | 'github'
+
+export const PublicGoodSigstoreInstance: SigstoreInstance = {
+  type: 'public-good',
+  name: 'Public Good',
+  skipWrite: false,
+}
+
+export const GitHubSigstoreInstance: SigstoreInstance = {
+  type: 'github',
+  name: 'GitHub',
+  skipWrite: false,
+}
+
+
 export type AttestResult = Attestation & {
   subjectName: string
   subjectDigest: string
@@ -27,10 +48,10 @@ export const createAttestation = async (
     subjectDigest: subject.digest,
     predicateType: predicate.type,
     predicate: predicate.params,
-    sigstore: opts.sigstoreInstance,
+    sigstore: opts.sigstoreInstance.type,
     token: opts.githubToken,
-    rekorURL: opts.rekorURL,
-    skipWrite: opts.rekorURL.length > 0,
+    rekorURL: opts.sigstoreInstance.rekorURL,
+    skipWrite: opts.sigstoreInstance.skipWrite
   })
 
   const subDigest = subjectDigest(subject)

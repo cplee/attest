@@ -3,7 +3,7 @@ import * as github from '@actions/github'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { AttestResult, SigstoreInstance, createAttestation } from './attest'
+import { AttestResult, GitHubSigstoreInstance, PublicGoodSigstoreInstance, SigstoreInstance, createAttestation } from './attest'
 import { SEARCH_PUBLIC_GOOD_URL } from './endpoints'
 import { PredicateInputs, predicateFromInputs } from './predicate'
 import * as style from './style'
@@ -44,8 +44,8 @@ export async function run(inputs: RunInputs): Promise<void> {
   const sigstoreInstance: SigstoreInstance =
     github.context.payload.repository?.visibility === 'public' &&
     !inputs.privateSigning
-      ? 'public-good'
-      : 'github'
+      ? PublicGoodSigstoreInstance
+      : GitHubSigstoreInstance
 
   try {
     const atts: AttestResult[] = []
@@ -132,8 +132,7 @@ const logAttestation = (
     `Attestation created for ${attestation.subjectName}@${attestation.subjectDigest}`
   )
 
-  const instanceName =
-    sigstoreInstance === 'public-good' ? 'Public Good' : 'GitHub'
+  const instanceName = sigstoreInstance.name
   core.startGroup(
     style.highlight(
       `Attestation signed using certificate from ${instanceName} Sigstore instance`
@@ -148,7 +147,11 @@ const logAttestation = (
         'Attestation signature uploaded to Rekor transparency log'
       )
     )
-    core.info(`${SEARCH_PUBLIC_GOOD_URL}?logIndex=${attestation.tlogID}`)
+    if (sigstoreInstance.rekorURL) {
+      core.info(`${sigstoreInstance.rekorURL}/api/v1/log/entries?logIndex=${attestation.tlogID}`)
+    } else {
+      core.info(`${SEARCH_PUBLIC_GOOD_URL}?logIndex=${attestation.tlogID}`)
+    }
   }
 
   if (attestation.attestationID) {
